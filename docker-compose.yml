@@ -1,0 +1,15 @@
+services:
+  postgres:
+    image: postgres:16
+    container_name: bankcore-postgres
+    environment:
+      POSTGRES_DB: bankcore
+      POSTGRES_USER: bankcore
+      POSTGRES_PASSWORD: bankcore
+    ports:
+      - "5432:5432"
+    volumes:
+      - bankcore_data:/var/lib/postgresql/data
+
+volumes:
+  bankcore_data:
