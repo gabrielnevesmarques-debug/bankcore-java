@@ -41,7 +41,7 @@ public class BankingService {
     @Transactional
     public AccountResponse deposit(UUID accountId, BigDecimal amount) {
         validateAmount(amount);
-        Account account = findAccount(accountId);
+        Account account = findAccountForUpdate(accountId);
         account.deposit(amount);
         transactionRepository.save(new BankTransaction(account, TransactionType.DEPOSIT, amount));
         return AccountResponse.from(account);
@@ -50,7 +50,7 @@ public class BankingService {
     @Transactional
     public AccountResponse withdraw(UUID accountId, BigDecimal amount) {
         validateAmount(amount);
-        Account account = findAccount(accountId);
+        Account account = findAccountForUpdate(accountId);
         account.withdraw(amount);
         transactionRepository.save(new BankTransaction(account, TransactionType.WITHDRAWAL, amount));
         return AccountResponse.from(account);
@@ -59,12 +59,21 @@ public class BankingService {
     @Transactional
     public void transfer(UUID sourceId, TransferRequest request) {
         validateAmount(request.amount());
-        if (sourceId.equals(request.destinationAccountId())) {
+        UUID destinationId = request.destinationAccountId();
+
+        if (sourceId.equals(destinationId)) {
             throw new IllegalArgumentException("A conta de origem e destino devem ser diferentes.");
         }
 
-        Account source = findAccount(sourceId);
-        Account destination = findAccount(request.destinationAccountId());
+        // Bloqueia as contas sempre na mesma ordem para reduzir o risco de deadlock.
+        UUID firstId = sourceId.compareTo(destinationId) < 0 ? sourceId : destinationId;
+        UUID secondId = sourceId.compareTo(destinationId) < 0 ? destinationId : sourceId;
+
+        Account first = findAccountForUpdate(firstId);
+        Account second = findAccountForUpdate(secondId);
+
+        Account source = first.getId().equals(sourceId) ? first : second;
+        Account destination = first.getId().equals(destinationId) ? first : second;
 
         source.withdraw(request.amount());
         destination.deposit(request.amount());
@@ -85,9 +94,20 @@ public class BankingService {
                 .orElseThrow(() -> new IllegalArgumentException("Conta não encontrada."));
     }
 
+    private Account findAccountForUpdate(UUID id) {
+        return accountRepository.findByIdForUpdate(id)
+                .orElseThrow(() -> new IllegalArgumentException("Conta não encontrada."));
+    }
+
     private void validateAmount(BigDecimal amount) {
         if (amount == null || amount.compareTo(BigDecimal.ZERO) <= 0) {
             throw new IllegalArgumentException("O valor deve ser maior que zero.");
+        }
+        if (amount.scale() > 2) {
+            throw new IllegalArgumentException("O valor deve ter no máximo duas casas decimais.");
+        }
+        if (amount.precision() - amount.scale() > 17) {
+            throw new IllegalArgumentException("O valor informado é muito alto.");
         }
     }
 }
