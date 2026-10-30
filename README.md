@@ -11,7 +11,8 @@ API REST de operações bancárias, desenvolvida como projeto de portfólio para
 - Realizar depósitos e saques.
 - Transferir valores entre contas.
 - Consultar o histórico de transações.
-- Validar valores positivos, limite de casas decimais e saldo disponível.
+- Validar valores positivos, limite de casas decimais, nome do titular e saldo disponível.
+- Impedir que o saldo ultrapasse a capacidade definida no banco de dados.
 - Proteger operações de escrita com bloqueio pessimista das contas.
 - Registrar as duas pontas de uma transferência na mesma transação do banco de dados.
 
@@ -24,7 +25,7 @@ API REST de operações bancárias, desenvolvida como projeto de portfólio para
 - PostgreSQL
 - Maven
 - Bean Validation
-- JUnit 5
+- JUnit 5 (dependência configurada; cobertura automatizada em evolução)
 
 ## Como executar
 
@@ -37,7 +38,7 @@ Pré-requisitos: JDK 21, Maven e Docker com Docker Compose.
    docker compose up -d
    ```
 
-3. Execute os testes e compile:
+3. Compile e execute os testes disponíveis:
 
    ```bash
    mvn clean test
