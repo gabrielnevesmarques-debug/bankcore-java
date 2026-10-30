@@ -7,11 +7,13 @@ import java.util.UUID;
 @Entity
 @Table(name = "accounts")
 public class Account {
+    private static final BigDecimal MAX_BALANCE = new BigDecimal("99999999999999999.99");
+
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
-    @Column(nullable = false)
+    @Column(nullable = false, length = 100)
     private String ownerName;
 
     @Column(nullable = false, precision = 19, scale = 2)
@@ -26,7 +28,11 @@ public class Account {
     }
 
     public void deposit(BigDecimal amount) {
-        balance = balance.add(amount);
+        BigDecimal newBalance = balance.add(amount);
+        if (newBalance.compareTo(MAX_BALANCE) > 0) {
+            throw new IllegalArgumentException("O saldo ultrapassa o limite permitido.");
+        }
+        balance = newBalance;
     }
 
     public void withdraw(BigDecimal amount) {
