@@ -4,6 +4,7 @@ import com.bankcore.dto.*;
 import com.bankcore.model.*;
 import com.bankcore.repository.AccountRepository;
 import com.bankcore.repository.BankTransactionRepository;
+import com.bankcore.exception.ResourceNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -91,7 +92,7 @@ public class BankingService {
 
     private Account findAccount(UUID id) {
         return accountRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Conta não encontrada."));
+                .orElseThrow(() -> new ResourceNotFoundException("Conta não encontrada."));
     }
 
     private Account findAccountForUpdate(UUID id) {
