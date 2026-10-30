@@ -11,22 +11,24 @@ API REST de operações bancárias, desenvolvida como projeto de portfólio para
 - Realizar depósitos e saques.
 - Transferir valores entre contas.
 - Consultar o histórico de transações.
-- Validar valores e impedir saques com saldo insuficiente.
-- Executar transferências dentro de uma transação do banco de dados.
+- Validar valores positivos, limite de casas decimais e saldo disponível.
+- Proteger operações de escrita com bloqueio pessimista das contas.
+- Registrar as duas pontas de uma transferência na mesma transação do banco de dados.
 
 ## Tecnologias
 
 - Java 21
-- Spring Boot
+- Spring Boot 3.5
 - Spring Web
 - Spring Data JPA / Hibernate
 - PostgreSQL
 - Maven
 - Bean Validation
+- JUnit 5
 
 ## Como executar
 
-Pré-requisitos: JDK 21, Docker e Docker Compose.
+Pré-requisitos: JDK 21, Maven e Docker com Docker Compose.
 
 1. Clone o repositório.
 2. Na pasta do projeto, inicie o PostgreSQL:
@@ -35,15 +37,21 @@ Pré-requisitos: JDK 21, Docker e Docker Compose.
    docker compose up -d
    ```
 
-3. Execute a aplicação:
+3. Execute os testes e compile:
 
    ```bash
-   ./mvnw spring-boot:run
+   mvn clean test
    ```
 
-   Se o projeto ainda não tiver o Maven Wrapper, use `mvn spring-boot:run` com Maven instalado.
+4. Inicie a API:
+
+   ```bash
+   mvn spring-boot:run
+   ```
 
 A API ficará disponível em `http://localhost:8080`.
+
+As configurações locais do banco podem ser alteradas pelas variáveis `DB_URL`, `DB_USERNAME` e `DB_PASSWORD`.
 
 ## Endpoints
 
@@ -104,7 +112,7 @@ Content-Type: application/json
 
 ## Próximas evoluções
 
-- Testes automatizados para as regras de negócio e endpoints.
+- Testes automatizados dos serviços e endpoints.
 - Autenticação e autorização.
 - Migrações de banco com Flyway.
 - Documentação interativa com Swagger/OpenAPI.
